@@ -9,13 +9,15 @@
 """
 
 import os
-import asyncio
-
-from sqlalchemy import select
-from sqlalchemy.engine import Result
-from sqlalchemy.orm import sessionmaker, joinedload, selectinload, noload, declared_attr, declarative_base, relationship
+from sqlalchemy.orm import sessionmaker, declared_attr, \
+    declarative_base, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
+
+PG_CONN_URI = os.environ.get(
+    "SQLALCHEMY_PG_CONN_URI") or "postgresql+asyncpg://postgres:password@localhost/postgres"
+async_engine: AsyncEngine = create_async_engine(PG_CONN_URI, echo=True)
+Session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 class Base:
@@ -31,42 +33,18 @@ class Base:
 
 Base = declarative_base(cls=Base)
 
-PG_CONN_URI = os.environ.get("SQLALCHEMY_PG_CONN_URI") or "postgresql+asyncpg://postgres:password@localhost/postgres"
-async_engine: AsyncEngine = create_async_engine(PG_CONN_URI, echo=True)
-Session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
-
 
 class User(Base):
-    # __tablename__ = 'users_list'
-
     name = Column(String(50), unique=False)
     username = Column(String(50), unique=True)
     email = Column(String(50), unique=True)
 
     posts = relationship("Post", back_populates="user")
 
-    def __str__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"name={self.name}, "
-            f"username={self.username}, "
-            f"email={self.email})"
-        )
-
 
 class Post(Base):
-    # __tablename__ = 'posts_list'
-
     user_id = Column(Integer, ForeignKey("users.id"), unique=False)
     title = Column(String(100), unique=False)
     body = Column(String(500), unique=False)
 
     user = relationship("User", back_populates="posts")
-
-    def __str__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"user_id={self.user_id}, "
-            f"title={self.title}, "
-            f"body={self.body})"
-        )

@@ -76,22 +76,23 @@ async def main():
     # logger.info(type(users_data))
     # logger.info(posts_data)
     async with Session() as session:
-        for user_profile in users_data:
-            await create_user(
-                session,
-                user_profile.get("id"),
-                user_profile.get("name"),
-                user_profile.get("username"),
-                user_profile.get("email")
-            )
-        for post_profile in posts_data:
-            await create_post(
-                session,
-                post_profile.get("userId"),
-                post_profile.get("title"),
-                post_profile.get("body")
-            )
-        await session.commit()
+        async with session.begin():
+            for user_profile in users_data:
+                await create_user(
+                    session,
+                    user_profile.get("id"),
+                    user_profile.get("name"),
+                    user_profile.get("username"),
+                    user_profile.get("email")
+                )
+            for post_profile in posts_data:
+                await create_post(
+                    session,
+                    post_profile.get("userId"),
+                    post_profile.get("title"),
+                    post_profile.get("body")
+                )
+            await session.commit()
 
 
 if __name__ == "__main__":
