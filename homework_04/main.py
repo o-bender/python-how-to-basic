@@ -42,10 +42,6 @@ async def create_post(session, user_id: int, title: str, body: str) -> Post:
 
 
 async def async_main():
-    pass
-
-
-async def main():
     await create_tables()
     users_data, posts_data = await fetch_users_posts_from_api()
     async with Session() as session:
@@ -68,4 +64,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(async_main())
