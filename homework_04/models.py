@@ -11,14 +11,18 @@
 import os
 from sqlalchemy.orm import sessionmaker, declared_attr, \
     declarative_base, relationship
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import Column, String, Integer, ForeignKey
 
 PG_CONN_URI = os.environ.get(
     "SQLALCHEMY_PG_CONN_URI") or "postgresql+asyncpg://postgres:password@localhost/postgres"
-async_engine: AsyncEngine = create_async_engine(PG_CONN_URI, echo=True)
-Session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+engine = create_async_engine(PG_CONN_URI, echo=True)
+Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 class Base:
     @declared_attr
@@ -35,6 +39,7 @@ Base = declarative_base(cls=Base)
 
 
 class User(Base):
+    id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=False)
     username = Column(String(50), unique=True)
     email = Column(String(50), unique=True)
