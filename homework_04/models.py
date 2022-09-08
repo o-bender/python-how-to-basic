@@ -43,7 +43,7 @@ class User(Base):
     username = Column(String(50), unique=True)
     email = Column(String(50), unique=True)
 
-    posts = relationship("Post", back_populates="user", uselist=True)
+    posts = relationship("Post", back_populates="user")
 
     def __str__(self):
         return (

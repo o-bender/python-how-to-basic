@@ -92,10 +92,7 @@ async def main():
                 post_profile.get("body")
             )
         await session.commit()
-    # Session().close
-    await async_engine.dispose()
 
 
 if __name__ == "__main__":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
